@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Campus outlets — CampusEats{% endblock %}
+{% block content %}
+<h1 class="mb-2">What’s cooking on campus?</h1>
+<p class="text-muted mb-4">Pick an outlet, browse the menu, and order like you would for a canteen or food-court stall. Running a stall for your project demo? Sign up as an outlet manager and list your dishes.</p>
+<div class="row g-4">
+  {% for r in restaurants %}
+    <div class="col-md-6 col-lg-4">
+      <div class="card h-100 shadow-sm border-0">
+        <div class="card-body">
+          <h2 class="h5 card-title">{{ r.name }}</h2>
+          <p class="card-text small text-muted">{{ r.address }}</p>
+          <a href="{{ r.get_absolute_url }}" class="btn btn-success">See menu</a>
+        </div>
+      </div>
+    </div>
+  {% empty %}
+    <div class="col">
+      <p class="text-muted">No outlets yet. For your demo, register as <em>I run a campus outlet</em> and add your first menu — then log in as a student account to place a test order.</p>
+    </div>
+  {% endfor %}
+</div>
+{% endblock %}

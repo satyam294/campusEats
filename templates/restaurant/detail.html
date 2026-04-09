@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}{{ restaurant.name }} — CampusEats{% endblock %}
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-3">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{% url 'restaurant:home' %}">Outlets</a></li>
+    <li class="breadcrumb-item active">{{ restaurant.name }}</li>
+  </ol>
+</nav>
+<h1 class="mb-2">{{ restaurant.name }}</h1>
+<p class="text-muted">{{ restaurant.description }}</p>
+<p class="small">{{ restaurant.address }}{% if restaurant.phone %} · {{ restaurant.phone }}{% endif %}</p>
+
+{% if user.is_authenticated and user.profile.role == 'customer' %}
+<div class="mb-4">
+  <a href="{% url 'orders:cart' %}" class="btn btn-primary">Open my cart</a>
+</div>
+{% elif not user.is_authenticated %}
+<p class="small text-muted"><a href="{% url 'accounts:login' %}">Log in</a> with a food-ordering account to add items — or <a href="{% url 'accounts:register' %}">sign up</a> in a minute.</p>
+{% endif %}
+
+<div class="row g-4">
+  {% for item in items %}
+    <div class="col-md-6 col-lg-4">
+      <div class="card h-100 shadow-sm">
+        {% if item.image %}
+          <img src="{{ item.image.url }}" class="card-img-top" alt="" style="height: 160px; object-fit: cover;">
+        {% endif %}
+        <div class="card-body">
+          <h2 class="h6 card-title">{{ item.name }}</h2>
+          <p class="card-text small">{{ item.description }}</p>
+          <p class="fw-semibold">${{ item.price }}</p>
+          {% if user.is_authenticated and user.profile.role == 'customer' %}
+            <form method="post" action="{% url 'orders:add_to_cart' item.id %}">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-sm btn-success">Add to my cart</button>
+            </form>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  {% empty %}
+    <p class="text-muted">This outlet hasn’t published any dishes yet — check back after your classmate adds the menu.</p>
+  {% endfor %}
+</div>
+{% endblock %}

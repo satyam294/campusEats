@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Demo checkout — Order #{{ order.pk }}{% endblock %}
+{% block content %}
+<h1 class="mb-2">Demo checkout</h1>
+<p class="text-muted mb-4">This screen stands in for a real payment gateway (Razorpay, Stripe, etc.). For your college submission, pick an outcome — <strong>no money moves</strong>.</p>
+<div class="card shadow-sm mb-4 border-0" style="max-width: 28rem;">
+  <div class="card-body">
+    <p class="mb-1"><strong>Order</strong> #{{ order.pk }}</p>
+    <p class="mb-1"><strong>Outlet:</strong> {{ order.restaurant.name }}</p>
+    <p class="fs-5 mb-4"><strong>Amount:</strong> ${{ order.total }}</p>
+    <form method="post" class="d-flex flex-column gap-2">
+      {% csrf_token %}
+      <button type="submit" name="outcome" value="success" class="btn btn-success">Payment succeeds (happy path)</button>
+      <button type="submit" name="outcome" value="fail" class="btn btn-outline-secondary">Payment fails (retry flow)</button>
+    </form>
+  </div>
+</div>
+<p><a href="{% url 'orders:detail' order.pk %}">← Back to order</a></p>
+{% endblock %}

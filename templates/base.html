@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}CampusEats{% endblock %}</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light d-flex flex-column min-vh-100">
+  <nav class="navbar navbar-expand-lg navbar-dark mb-4" style="background: linear-gradient(135deg, #1a3a2f 0%, #2d5a47 100%);">
+    <div class="container">
+      <a class="navbar-brand fw-semibold" href="{% url 'restaurant:home' %}">CampusEats</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="nav">
+        <ul class="navbar-nav me-auto">
+          <li class="nav-item"><a class="nav-link" href="{% url 'restaurant:home' %}">Outlets</a></li>
+          {% if user.is_authenticated %}
+            {% if user.profile.role == 'customer' %}
+              <li class="nav-item"><a class="nav-link" href="{% url 'orders:cart' %}">My cart</a></li>
+            {% endif %}
+            <li class="nav-item"><a class="nav-link" href="{% url 'orders:mine' %}">{% if user.profile.role == 'customer' %}My orders{% else %}Kitchen orders{% endif %}</a></li>
+            {% if user.profile.role == 'owner' %}
+              <li class="nav-item"><a class="nav-link" href="{% url 'restaurant:my_restaurant' %}">My outlet</a></li>
+              <li class="nav-item"><a class="nav-link" href="{% url 'restaurant:menu_manage' %}">Menu</a></li>
+            {% endif %}
+          {% endif %}
+        </ul>
+        <ul class="navbar-nav">
+          {% if user.is_authenticated %}
+            <li class="nav-item d-flex align-items-center gap-2 ms-lg-2">
+              <span class="navbar-text text-light opacity-75 mb-0 py-2">Hi, {{ user.username }}</span>
+              <form method="post" action="{% url 'accounts:logout' %}" class="d-flex align-items-center m-0">
+                {% csrf_token %}
+                <button type="submit" class="btn nav-link text-white text-decoration-none border-0 bg-transparent px-2 py-2">Log out</button>
+              </form>
+            </li>
+          {% else %}
+            <li class="nav-item"><a class="nav-link" href="{% url 'accounts:login' %}">Log in</a></li>
+            <li class="nav-item"><a class="nav-link" href="{% url 'accounts:register' %}">Sign up</a></li>
+          {% endif %}
+        </ul>
+      </div>
+    </div>
+  </nav>
+  <main class="container pb-5 flex-grow-1">
+    {% if messages %}
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      {% endfor %}
+    {% endif %}
+    {% block content %}{% endblock %}
+  </main>
+  <footer class="border-top bg-white mt-auto py-4">
+    <div class="container text-center text-muted small">
+      <p class="mb-1"><strong class="text-body">CampusEats</strong> — online food ordering, built as a college software project.</p>
+      <p class="mb-0">Demo payments only; no real money is processed.</p>
+    </div>
+  </footer>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

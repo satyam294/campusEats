@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} — CampusEats{% endblock %}
+{% block content %}
+<h1 class="mb-4">{{ title }}</h1>
+<div class="row">
+  <div class="col-lg-7">
+    <form method="post" enctype="multipart/form-data" class="card card-body shadow-sm border-0">
+      {% csrf_token %}
+      {% for field in form %}
+        <div class="mb-3">
+          <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+          {{ field.errors }}
+          {{ field }}
+        </div>
+      {% endfor %}
+      <button type="submit" class="btn btn-success">Save dish</button>
+      <a href="{% url 'restaurant:menu_manage' %}" class="btn btn-outline-secondary">Cancel</a>
+    </form>
+  </div>
+</div>
+{% endblock %}

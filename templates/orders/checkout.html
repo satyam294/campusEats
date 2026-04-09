@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Checkout — CampusEats{% endblock %}
+{% block content %}
+<h1 class="mb-2">Almost there</h1>
+<p class="text-muted mb-4">Ordering from <strong>{{ restaurant.name }}</strong> — add where we should deliver on campus (or your demo address).</p>
+<div class="row g-4">
+  <div class="col-lg-7">
+    <div class="card shadow-sm mb-4">
+      <div class="card-body">
+        <h2 class="h6">Your order</h2>
+        <ul class="list-group list-group-flush">
+          {% for line in items %}
+            <li class="list-group-item d-flex justify-content-between">
+              <span>{{ line.menu_item.name }} × {{ line.quantity }}</span>
+              <span>${{ line.line_total }}</span>
+            </li>
+          {% endfor %}
+          <li class="list-group-item d-flex justify-content-between fw-semibold">
+            <span>Total</span>
+            <span>${{ total }}</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-5">
+    <form method="post" class="card card-body shadow-sm">
+      {% csrf_token %}
+      <div class="mb-3">
+        <label class="form-label" for="addr">Where should we bring it?</label>
+        <textarea name="delivery_address" id="addr" class="form-control" rows="3" required placeholder="e.g. Block A mess lawn, hostel gate, or room number for demo"></textarea>
+      </div>
+      <div class="mb-3">
+        <label class="form-label" for="phone">Phone (optional)</label>
+        <input type="text" name="delivery_phone" id="phone" class="form-control">
+      </div>
+      <button type="submit" class="btn btn-success">Place order</button>
+      <a href="{% url 'orders:cart' %}" class="btn btn-outline-secondary">Back to cart</a>
+      <p class="small text-muted mt-3 mb-0">Next you’ll see a <strong>demo checkout</strong> — no payment is taken for real.</p>
+    </form>
+  </div>
+</div>
+{% endblock %}

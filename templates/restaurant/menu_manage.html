@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Menu — {{ restaurant.name }}{% endblock %}
+{% block content %}
+<h1 class="mb-2">Menu — {{ restaurant.name }}</h1>
+<p class="text-muted mb-3">Students see these dishes on your outlet page. Add photos if you can — it makes the demo pop.</p>
+<p class="mb-4"><a href="{% url 'restaurant:menu_item_create' %}" class="btn btn-success">Add a dish</a>
+  <a href="{% url 'restaurant:my_restaurant' %}" class="btn btn-outline-secondary">Outlet profile</a></p>
+<div class="table-responsive card shadow-sm">
+  <table class="table table-hover mb-0">
+    <thead class="table-light">
+      <tr>
+        <th>Name</th>
+        <th>Price</th>
+        <th>Available</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in items %}
+        <tr>
+          <td>{{ item.name }}</td>
+          <td>${{ item.price }}</td>
+          <td>{% if item.is_available %}Yes{% else %}No{% endif %}</td>
+          <td class="text-end">
+            <a href="{% url 'restaurant:menu_item_edit' item.pk %}" class="btn btn-sm btn-outline-primary">Edit</a>
+            <form method="post" action="{% url 'restaurant:menu_item_delete' item.pk %}" class="d-inline" onsubmit="return confirm('Remove this dish from the menu?');">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+            </form>
+          </td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="4" class="text-muted p-4">No dishes yet — add one so classmates can place a sample order.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
