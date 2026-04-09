@@ -6,8 +6,14 @@
 <div class="card shadow-sm mb-4 border-0" style="max-width: 28rem;">
   <div class="card-body">
     <p class="mb-1"><strong>Order</strong> #{{ order.pk }}</p>
-    <p class="mb-1"><strong>Outlet:</strong> {{ order.restaurant.name }}</p>
-    <p class="fs-5 mb-4"><strong>Amount:</strong> ₹{{ order.total }}</p>
+    {% if group_payment %}
+      <p class="mb-1"><strong>Orders:</strong> {{ restaurant_names|join:", " }}</p>
+      <p class="fs-5 mb-4"><strong>Amount:</strong> ₹{{ group_total }}</p>
+      <p class="small text-muted">This payment will complete all linked restaurant orders.</p>
+    {% else %}
+      <p class="mb-1"><strong>Outlet:</strong> {{ order.restaurant.name }}</p>
+      <p class="fs-5 mb-4"><strong>Amount:</strong> ₹{{ order.total }}</p>
+    {% endif %}
     <form method="post" class="d-flex flex-column gap-2">
       {% csrf_token %}
       <button type="submit" name="outcome" value="success" class="btn btn-success">Payment succeeds (happy path)</button>

@@ -1,23 +1,170 @@
 {% extends "base.html" %}
-{% block title %}Campus outlets — CampusEats{% endblock %}
+{% load static %}
+{% block title %}CampusEats — Delicious Food on Campus{% endblock %}
 {% block content %}
-<h1 class="mb-2">What’s cooking on campus?</h1>
-<p class="text-muted mb-4">Pick an outlet, browse the menu, and order like you would for a canteen or food-court stall. Running a stall for your project demo? Sign up as an outlet manager and list your dishes.</p>
-<div class="row g-4">
-  {% for r in restaurants %}
-    <div class="col-md-6 col-lg-4">
-      <div class="card h-100 shadow-sm border-0">
-        <div class="card-body">
-          <h2 class="h5 card-title">{{ r.name }}</h2>
-          <p class="card-text small text-muted">{{ r.address }}</p>
-          <a href="{{ r.get_absolute_url }}" class="btn btn-success">See menu</a>
+<div class="hero-section bg-success text-white py-5 mb-4 ps-5 rounded-3">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-lg-8">
+        <h1 class="display-5 fw-bold mb-3">What's cooking on campus?</h1>
+        <p class="lead mb-0">Discover amazing dishes from your favorite campus outlets. Fresh, delicious, and delivered right to you!</p>
+      </div>
+      <div class="col-lg-4">
+        <img src="{% static 'images/hero-food.png' %}" alt="Campus Food" class="img-fluid rounded" style="max-height: 250px;" onerror="this.style.display='none'">
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Offers/Deals Section -->
+<div class="container mb-5">
+  <div class="row g-3">
+    <div class="col-md-4">
+      <div class="card border-success h-100">
+        <div class="card-body text-center">
+          <div class="text-success mb-2">
+            <i class="fas fa-percentage fa-2x"></i>
+          </div>
+          <h5 class="card-title">Student Discount</h5>
+          <p class="card-text">Get 10% off on all orders with your student ID</p>
         </div>
       </div>
     </div>
-  {% empty %}
-    <div class="col">
-      <p class="text-muted">No outlets yet. For your demo, register as <em>I run a campus outlet</em> and add your first menu — then log in as a student account to place a test order.</p>
+    <div class="col-md-4">
+      <div class="card border-success h-100">
+        <div class="card-body text-center">
+          <div class="text-success mb-2">
+            <i class="fas fa-clock fa-2x"></i>
+          </div>
+          <h5 class="card-title">Quick Delivery</h5>
+          <p class="card-text">Fast delivery within campus premises</p>
+        </div>
+      </div>
     </div>
-  {% endfor %}
+    <div class="col-md-4">
+      <div class="card border-success h-100">
+        <div class="card-body text-center">
+          <div class="text-success mb-2">
+            <i class="fas fa-utensils fa-2x"></i>
+          </div>
+          <h5 class="card-title">Fresh & Quality</h5>
+          <p class="card-text">Quality food from trusted campus outlets</p>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
+
+<!-- Tabs Section -->
+<div class="container">
+  <ul class="nav nav-tabs mb-4" id="campusTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+      <button class="nav-link active" id="featured-tab" data-bs-toggle="tab" data-bs-target="#featured" type="button" role="tab" aria-controls="featured" aria-selected="true">
+        <i class="fas fa-star me-2"></i>Featured Dishes
+      </button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="restaurants-tab" data-bs-toggle="tab" data-bs-target="#restaurants" type="button" role="tab" aria-controls="restaurants" aria-selected="false">
+        <i class="fas fa-store me-2"></i>Campus Outlets
+      </button>
+    </li>
+  </ul>
+
+  <div class="tab-content" id="campusTabsContent">
+    <!-- Featured Dishes Tab -->
+    <div class="tab-pane fade show active" id="featured" role="tabpanel" aria-labelledby="featured-tab">
+      <h2 class="mb-4">Popular Dishes</h2>
+      {% if featured_dishes %}
+        <div class="row g-4">
+          {% for item in featured_dishes %}
+            <div class="col-md-6 col-lg-4 col-xl-3">
+              <div class="card h-100 shadow-sm hover-card">
+                {% if item.image %}
+                  <img src="{{ item.image.url }}" class="card-img-top" alt="{{ item.name }}" style="height: 180px; object-fit: cover;">
+                {% else %}
+                  <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 180px;">
+                    <i class="fas fa-utensils fa-3x text-muted"></i>
+                  </div>
+                {% endif %}
+                <div class="card-body d-flex flex-column">
+                  <h5 class="card-title h6">{{ item.name }}</h5>
+                  <p class="card-text small text-muted">{{ item.description|truncatechars:60 }}</p>
+                  <div class="mt-auto">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                      <span class="fw-bold text-success">₹{{ item.price }}</span>
+                      <small class="text-muted">{{ item.restaurant.name }}</small>
+                    </div>
+                    {% if user.is_authenticated and user.profile.role == 'customer' %}
+                      <form method="post" action="{% url 'orders:add_to_cart' item.id %}" class="add-to-cart-form">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-success btn-sm w-100">Add to Cart</button>
+                      </form>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="text-center py-5">
+          <i class="fas fa-utensils fa-4x text-muted mb-3"></i>
+          <h3 class="text-muted">No dishes available yet</h3>
+          <p class="text-muted">Check back soon for amazing campus food!</p>
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- Restaurants Tab -->
+    <div class="tab-pane fade" id="restaurants" role="tabpanel" aria-labelledby="restaurants-tab">
+      <h2 class="mb-4">Campus Outlets</h2>
+      <p class="text-muted mb-4">Pick an outlet, browse the menu, and order like you would for a canteen or food-court stall. Running a stall for your project demo? Sign up as an outlet manager and list your dishes.</p>
+      {% if restaurants %}
+        <div class="row g-4">
+          {% for r in restaurants %}
+            <div class="col-md-6 col-lg-4">
+              <div class="card h-100 shadow-sm border-0 hover-card">
+                {% if r.cover_image %}
+                  <img src="{{ r.cover_image.url }}" class="card-img-top" alt="{{ r.name }}" style="height: 160px; object-fit: cover;">
+                {% else %}
+                  <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 160px;">
+                    <i class="fas fa-store fa-3x text-muted"></i>
+                  </div>
+                {% endif %}
+                <div class="card-body">
+                  <h5 class="card-title h5">{{ r.name }}</h5>
+                  <p class="card-text small text-muted">{{ r.address }}</p>
+                  {% if r.description %}
+                    <p class="card-text small">{{ r.description|truncatechars:80 }}</p>
+                  {% endif %}
+                  <a href="{{ r.get_absolute_url }}" class="btn btn-success">See Menu</a>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="col">
+          <div class="text-center py-5">
+            <i class="fas fa-store fa-4x text-muted mb-3"></i>
+            <p class="text-muted">No outlets yet. For your demo, register as <em>I run a campus outlet</em> and add your first menu — then log in as a student account to place a test order.</p>
+          </div>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<style>
+.hover-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.hover-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1) !important;
+}
+.hero-section {
+  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+}
+</style>
 {% endblock %}

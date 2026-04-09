@@ -1,6 +1,7 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_http_methods
 
@@ -37,20 +38,27 @@ def get_or_create_cart(user):
 def add_to_cart(request, menu_item_id):
     item = get_object_or_404(MenuItem, pk=menu_item_id, is_available=True)
     cart = get_or_create_cart(request.user)
-    if cart.items.exists():
-        existing_rid = cart.items.first().menu_item.restaurant_id
-        if existing_rid != item.restaurant_id:
-            messages.warning(
-                request,
-                "Your cart already has items from another outlet. Clear the cart or finish that order first.",
-            )
-            return redirect("restaurant:detail", pk=item.restaurant_id)
     ci, created = CartItem.objects.get_or_create(cart=cart, menu_item=item, defaults={"quantity": 1})
     if not created:
         ci.quantity += 1
         ci.save()
+
+    # Check if this is an AJAX request
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        # Calculate cart count after adding the item
+        cart_count = sum(ci.quantity for ci in cart.items.all())
+        return JsonResponse({
+            'success': True,
+            'message': f"Nice choice — {item.name} is in your cart.",
+            'cart_count': cart_count
+        })
+
+    # For regular form submissions, redirect back to referring page
     messages.success(request, f"Nice choice — {item.name} is in your cart.")
-    return redirect("restaurant:detail", pk=item.restaurant_id)
+    referer = request.META.get('HTTP_REFERER')
+    if referer and 'restaurant' in referer:
+        return redirect(referer)
+    return redirect("restaurant:home")
 
 
 @login_required
@@ -114,11 +122,10 @@ def checkout(request):
         messages.warning(request, "Your cart is empty — add something delicious first.")
         return redirect("orders:cart")
     restaurant_ids = {i.menu_item.restaurant_id for i in items}
-    if len(restaurant_ids) > 1:
-        messages.error(request, "Something’s off with your cart. Please start again from the outlet menu.")
-        return redirect("orders:cart")
-    restaurant = items[0].menu_item.restaurant
+    multiple_restaurants = len(restaurant_ids) > 1
+    restaurant = items[0].menu_item.restaurant if not multiple_restaurants else None
     total = cart.total()
+    restaurant_names = sorted({i.menu_item.restaurant.name for i in items})
     if request.method == "POST":
         address = request.POST.get("delivery_address", "").strip()
         phone = request.POST.get("delivery_phone", "").strip()
@@ -126,24 +133,59 @@ def checkout(request):
             messages.error(request, "Please tell us where to bring your order (delivery address).")
         else:
             with transaction.atomic():
-                order = Order.objects.create(
-                    user=request.user,
-                    restaurant=restaurant,
-                    status=Order.Status.PENDING_PAYMENT,
-                    total=total,
-                    delivery_address=address,
-                    delivery_phone=phone,
-                    is_paid=False,
-                )
-                for ci in items:
-                    OrderItem.objects.create(
-                        order=order,
-                        menu_item=ci.menu_item,
-                        name=ci.menu_item.name,
-                        unit_price=ci.menu_item.price,
-                        quantity=ci.quantity,
+                created_orders = []
+                if multiple_restaurants:
+                    grouped = {}
+                    for ci in items:
+                        restaurant_key = ci.menu_item.restaurant
+                        grouped.setdefault(restaurant_key, []).append(ci)
+                    for restaurant_obj, restaurant_items in grouped.items():
+                        order = Order.objects.create(
+                            user=request.user,
+                            restaurant=restaurant_obj,
+                            status=Order.Status.PENDING_PAYMENT,
+                            total=sum(ci.line_total() for ci in restaurant_items),
+                            delivery_address=address,
+                            delivery_phone=phone,
+                            is_paid=False,
+                        )
+                        for ci in restaurant_items:
+                            OrderItem.objects.create(
+                                order=order,
+                                menu_item=ci.menu_item,
+                                name=ci.menu_item.name,
+                                unit_price=ci.menu_item.price,
+                                quantity=ci.quantity,
+                            )
+                        created_orders.append(order)
+                else:
+                    order = Order.objects.create(
+                        user=request.user,
+                        restaurant=restaurant,
+                        status=Order.Status.PENDING_PAYMENT,
+                        total=total,
+                        delivery_address=address,
+                        delivery_phone=phone,
+                        is_paid=False,
                     )
+                    for ci in items:
+                        OrderItem.objects.create(
+                            order=order,
+                            menu_item=ci.menu_item,
+                            name=ci.menu_item.name,
+                            unit_price=ci.menu_item.price,
+                            quantity=ci.quantity,
+                        )
+                    created_orders.append(order)
                 cart.items.all().delete()
+            if multiple_restaurants:
+                first_order = created_orders[0]
+                request.session["pending_payment_orders"] = [order.pk for order in created_orders]
+                messages.success(
+                    request,
+                    "Orders placed for each restaurant. Complete one demo payment now and we will mark all the linked orders as paid.",
+                )
+                return redirect("payments:mock_pay", order_id=first_order.pk)
             messages.success(
                 request,
                 "Order placed! Next step: complete the demo checkout (no real money).",
@@ -156,6 +198,8 @@ def checkout(request):
             "items": items,
             "restaurant": restaurant,
             "total": total,
+            "multiple_restaurants": multiple_restaurants,
+            "restaurant_names": restaurant_names,
         },
     )
 

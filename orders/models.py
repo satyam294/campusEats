@@ -18,6 +18,9 @@ class Cart(models.Model):
             total += ci.line_total()
         return total
 
+    def item_count(self):
+        return sum(ci.quantity for ci in self.items.all())
+
 
 class CartItem(models.Model):
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name="items")
