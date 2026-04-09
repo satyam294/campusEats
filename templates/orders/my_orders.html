@@ -29,7 +29,7 @@
           <td>{{ o.restaurant.name }}</td>
           {% if user.profile.role != 'customer' %}<td>{{ o.user.username }}</td>{% endif %}
           <td><span class="badge text-bg-secondary">{{ o.get_status_display }}</span></td>
-          <td>${{ o.total }}</td>
+          <td>₹{{ o.total }}</td>
           <td>{% if o.is_paid %}Yes{% else %}No{% endif %}</td>
           <td class="small">{{ o.created_at|date:"M j, Y H:i" }}</td>
           <td><a href="{% url 'orders:detail' o.pk %}" class="btn btn-sm btn-outline-primary">View</a></td>

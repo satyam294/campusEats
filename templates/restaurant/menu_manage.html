@@ -19,7 +19,7 @@
       {% for item in items %}
         <tr>
           <td>{{ item.name }}</td>
-          <td>${{ item.price }}</td>
+          <td>₹{{ item.price }}</td>
           <td>{% if item.is_available %}Yes{% else %}No{% endif %}</td>
           <td class="text-end">
             <a href="{% url 'restaurant:menu_item_edit' item.pk %}" class="btn btn-sm btn-outline-primary">Edit</a>

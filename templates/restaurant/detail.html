@@ -29,7 +29,7 @@
         <div class="card-body">
           <h2 class="h6 card-title">{{ item.name }}</h2>
           <p class="card-text small">{{ item.description }}</p>
-          <p class="fw-semibold">${{ item.price }}</p>
+          <p class="fw-semibold">₹{{ item.price }}</p>
           {% if user.is_authenticated and user.profile.role == 'customer' %}
             <form method="post" action="{% url 'orders:add_to_cart' item.id %}">
               {% csrf_token %}

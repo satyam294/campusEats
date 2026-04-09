@@ -19,7 +19,7 @@
         {% for line in items %}
           <tr>
             <td>{{ line.menu_item.name }}</td>
-            <td>${{ line.menu_item.price }}</td>
+            <td>₹{{ line.menu_item.price }}</td>
             <td>
               <form method="post" action="{% url 'orders:update_cart_item' line.pk %}" class="d-flex gap-1 align-items-center">
                 {% csrf_token %}
@@ -27,7 +27,7 @@
                 <button type="submit" class="btn btn-sm btn-outline-secondary">Update</button>
               </form>
             </td>
-            <td>${{ line.line_total }}</td>
+            <td>₹{{ line.line_total }}</td>
             <td>
               <form method="post" action="{% url 'orders:remove_cart_item' line.pk %}">
                 {% csrf_token %}
@@ -39,7 +39,7 @@
       </tbody>
     </table>
   </div>
-  <p class="fs-5"><strong>Total:</strong> ${{ total }}</p>
+  <p class="fs-5"><strong>Total:</strong> ₹{{ total }}</p>
   <div class="d-flex gap-2 flex-wrap">
     <a href="{% url 'orders:checkout' %}" class="btn btn-success">Go to checkout</a>
     <form method="post" action="{% url 'orders:clear_cart' %}">

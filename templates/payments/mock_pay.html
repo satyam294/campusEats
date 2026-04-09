@@ -7,7 +7,7 @@
   <div class="card-body">
     <p class="mb-1"><strong>Order</strong> #{{ order.pk }}</p>
     <p class="mb-1"><strong>Outlet:</strong> {{ order.restaurant.name }}</p>
-    <p class="fs-5 mb-4"><strong>Amount:</strong> ${{ order.total }}</p>
+    <p class="fs-5 mb-4"><strong>Amount:</strong> ₹{{ order.total }}</p>
     <form method="post" class="d-flex flex-column gap-2">
       {% csrf_token %}
       <button type="submit" name="outcome" value="success" class="btn btn-success">Payment succeeds (happy path)</button>

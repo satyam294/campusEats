@@ -12,12 +12,12 @@
           {% for line in items %}
             <li class="list-group-item d-flex justify-content-between">
               <span>{{ line.menu_item.name }} × {{ line.quantity }}</span>
-              <span>${{ line.line_total }}</span>
+              <span>₹{{ line.line_total }}</span>
             </li>
           {% endfor %}
           <li class="list-group-item d-flex justify-content-between fw-semibold">
             <span>Total</span>
-            <span>${{ total }}</span>
+            <span>₹{{ total }}</span>
           </li>
         </ul>
       </div>
