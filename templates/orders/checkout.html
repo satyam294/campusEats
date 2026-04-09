@@ -2,7 +2,11 @@
 {% block title %}Checkout — CampusEats{% endblock %}
 {% block content %}
 <h1 class="mb-2">Almost there</h1>
-<p class="text-muted mb-4">Ordering from <strong>{{ restaurant.name }}</strong> — add where we should deliver on campus (or your demo address).</p>
+{% if multiple_restaurants %}
+  <p class="text-muted mb-4">Your cart contains dishes from multiple outlets: <strong>{{ restaurant_names|join:", " }}</strong>. Placing checkout will create separate demo orders for each restaurant.</p>
+{% else %}
+  <p class="text-muted mb-4">Ordering from <strong>{{ restaurant.name }}</strong> — add where we should deliver on campus (or your demo address).</p>
+{% endif %}
 <div class="row g-4">
   <div class="col-lg-7">
     <div class="card shadow-sm mb-4">
@@ -10,8 +14,13 @@
         <h2 class="h6">Your order</h2>
         <ul class="list-group list-group-flush">
           {% for line in items %}
-            <li class="list-group-item d-flex justify-content-between">
-              <span>{{ line.menu_item.name }} × {{ line.quantity }}</span>
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              <div>
+                <strong>{{ line.menu_item.name }}</strong> × {{ line.quantity }}
+                {% if multiple_restaurants %}
+                  <div class="small text-muted">{{ line.menu_item.restaurant.name }}</div>
+                {% endif %}
+              </div>
               <span>₹{{ line.line_total }}</span>
             </li>
           {% endfor %}

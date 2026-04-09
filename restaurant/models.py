@@ -13,6 +13,7 @@ class Restaurant(models.Model):
     description = models.TextField(blank=True)
     address = models.CharField(max_length=300)
     phone = models.CharField(max_length=30, blank=True)
+    cover_image = models.ImageField(upload_to="restaurant_covers/", blank=True, null=True)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 

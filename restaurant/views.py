@@ -10,8 +10,18 @@ from .models import MenuItem, Restaurant
 
 
 def home(request):
+    # Get featured dishes from various restaurants
+    featured_dishes = MenuItem.objects.filter(
+        is_available=True,
+        restaurant__is_active=True
+    ).select_related('restaurant').order_by('?')[:12]  # Random 12 dishes
+    
     restaurants = Restaurant.objects.filter(is_active=True)
-    return render(request, "restaurant/home.html", {"restaurants": restaurants})
+    
+    return render(request, "restaurant/home.html", {
+        "featured_dishes": featured_dishes,
+        "restaurants": restaurants
+    })
 
 
 def restaurant_detail(request, pk):
